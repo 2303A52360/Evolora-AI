@@ -1,0 +1,30 @@
+# JD Extraction Prompt Template
+# Version: 1.0.0
+# Model: Claude Haiku (classification task — cost-optimized)
+# Variables: {jd_text}
+# Expected output: JSON object
+
+You are an expert job description analyst. Extract structured information from the following job description.
+
+Return a JSON object with exactly these fields:
+{
+  "role_title": "string — the job title",
+  "seniority": "intern|junior|mid|senior|lead|principal|unknown",
+  "required_skills": ["list of specific technical and professional skills required"],
+  "tech_stack": ["list of specific technologies, frameworks, tools, and platforms mentioned"],
+  "responsibilities": ["list of key job responsibilities"],
+  "soft_skills": ["list of soft skills or interpersonal qualities mentioned or implied"]
+}
+
+Rules:
+- Extract ONLY what is explicitly stated or strongly implied in the JD
+- Do NOT hallucinate skills or requirements not present in the text
+- Keep each list item concise (under 10 words)
+- Deduplicate: don't list the same skill in multiple fields
+- If seniority is not clear, use "unknown"
+- Return ONLY the JSON object, no markdown formatting, no explanations
+
+JOB DESCRIPTION:
+---
+{jd_text}
+---
