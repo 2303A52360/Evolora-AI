@@ -3,17 +3,32 @@
  * All API calls in the frontend MUST go through this module.
  */
 
+const PRODUCTION_BACKEND_URL = "https://evolora-ai.onrender.com/api/v1";
+
 function getApiBaseUrl(): string {
-  let url = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1").trim();
-  // Strip trailing slashes
-  while (url.endsWith("/")) {
-    url = url.slice(0, -1);
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl && !envUrl.includes("localhost")) {
+    let url = envUrl.trim();
+    while (url.endsWith("/")) {
+      url = url.slice(0, -1);
+    }
+    if (!url.endsWith("/api/v1")) {
+      url = `${url}/api/v1`;
+    }
+    return url;
   }
-  // Ensure /api/v1 path suffix exists so endpoints don't 404
-  if (!url.endsWith("/api/v1")) {
-    url = `${url}/api/v1`;
+
+  // If running in browser and NOT on localhost (e.g. on Vercel evolora-ai.vercel.app),
+  // automatically point to your live Render backend so it works without manual env setup!
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    return PRODUCTION_BACKEND_URL;
   }
-  return url;
+
+  return "http://localhost:8000/api/v1";
 }
 
 const API_BASE_URL = getApiBaseUrl();
