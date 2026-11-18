@@ -17,20 +17,13 @@ Core loop: **job input → skill extraction → personalized assessment → mock
 | Infra | Docker + GitHub Actions CI/CD → Vercel (frontend) + Railway (backend) |
 | Observability | Sentry + PostHog + structured logging |
 
-## Monorepo Structure
+## Repository Structure
 ```
 /evolora
-  /apps
-    /web          — Next.js frontend (App Router, TypeScript, Tailwind)
-    /api          — FastAPI backend (Python 3.11+)
-  /packages
-    /shared-types — TypeScript types shared frontend/backend
-    /prompts      — Versioned LLM prompt templates
-  /docs
-    /specs        — One markdown spec per module
-    /adr          — Architecture decision records
-  /infra          — Docker, CI/CD configs
-  CLAUDE.md       — This file
+  /frontend     — Next.js frontend (App Router, TypeScript, Tailwind)
+  /backend      — FastAPI backend (Python 3.11+)
+  README.md     — Getting started guide
+  CLAUDE.md     — Project conventions
 ```
 
 ## Coding Conventions

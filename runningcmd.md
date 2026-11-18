@@ -1,11 +1,11 @@
 # Running Evolora
 
-## 🔧 Backend (FastAPI) — `apps/api`
+## 🔧 Backend (FastAPI) — `backend`
 
 ### macOS / Linux
 ```bash
 # Terminal 1
-cd apps/api
+cd backend
 
 # Activate virtual environment
 source .venv/bin/activate
@@ -17,7 +17,7 @@ uvicorn app.main:app --reload --port 8000
 ### Windows
 ```powershell
 # Terminal 1
-cd apps\api
+cd backend
 
 # Activate virtual environment
 .\venv\Scripts\activate
@@ -31,12 +31,12 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-## 🌐 Frontend (Next.js) — `apps/web`
+## 🌐 Frontend (Next.js) — `frontend`
 
 ### macOS / Linux / Windows
 ```bash
 # Terminal 2
-cd apps/web
+cd frontend
 
 # Install dependencies (first time only)
 npm install
