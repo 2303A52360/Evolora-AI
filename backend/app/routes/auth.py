@@ -29,6 +29,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest):
     """Register a new user account."""
+    from app.core import database as db
+    if not db.is_mongo_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=db.mongo_error_message or "Database is disconnected. Set valid MONGODB_URL in environment.",
+        )
+
     # Check if email already taken
     existing = await User.find_one(User.email == payload.email)
     if existing:
@@ -60,6 +67,13 @@ async def register(payload: RegisterRequest):
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: LoginRequest):
     """Authenticate and receive tokens."""
+    from app.core import database as db
+    if not db.is_mongo_connected:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=db.mongo_error_message or "Database is disconnected. Set valid MONGODB_URL in environment.",
+        )
+
     user = await User.find_one(User.email == payload.email)
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(

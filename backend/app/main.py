@@ -9,7 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from app.core.config import settings
-from app.core.database import connect_to_mongo, close_mongo_connection
+from app.core.database import (
+    connect_to_mongo,
+    close_mongo_connection,
+    is_mongo_connected,
+    mongo_error_message,
+)
 
 
 @asynccontextmanager
@@ -49,10 +54,13 @@ app.add_middleware(
 @app.get("/", tags=["System"])
 async def root():
     """Root endpoint — verifies the API is online."""
+    from app.core import database as db
     return {
-        "status": "healthy",
+        "status": "healthy" if db.is_mongo_connected else "degraded",
         "service": settings.APP_NAME,
         "version": settings.APP_VERSION,
+        "database": "connected" if db.is_mongo_connected else "disconnected",
+        "database_message": db.mongo_error_message or "MongoDB initialized",
         "docs": "/docs",
         "health": "/health",
     }
@@ -61,10 +69,12 @@ async def root():
 @app.get("/health", tags=["System"])
 async def health_check():
     """Health check endpoint — returns 200 if the API is running."""
+    from app.core import database as db
     return {
-        "status": "healthy",
+        "status": "healthy" if db.is_mongo_connected else "degraded",
         "version": settings.APP_VERSION,
         "service": settings.APP_NAME,
+        "database": "connected" if db.is_mongo_connected else "disconnected",
     }
 
 
