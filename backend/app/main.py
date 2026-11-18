@@ -44,7 +44,19 @@ app.add_middleware(
 )
 
 
-# ── Health check ──────────────────────────────────────────────────────────────
+# ── Root & Health check ────────────────────────────────────────────────────────
+
+@app.get("/", tags=["System"])
+async def root():
+    """Root endpoint — verifies the API is online."""
+    return {
+        "status": "healthy",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "docs": "/docs",
+        "health": "/health",
+    }
+
 
 @app.get("/health", tags=["System"])
 async def health_check():
