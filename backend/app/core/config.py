@@ -3,7 +3,8 @@ Application configuration — all settings from environment variables.
 """
 
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Union, Any
+import json
 
 
 class Settings(BaseSettings):
@@ -14,7 +15,24 @@ class Settings(BaseSettings):
     APP_VERSION: str = "0.1.0"
     DEBUG: bool = False
     API_PREFIX: str = "/api/v1"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: Union[list[str], str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+
+    @property
+    def cors_origins(self) -> list[str]:
+        """Normalize ALLOWED_ORIGINS whether passed as list, JSON string, or comma-separated string."""
+        v = self.ALLOWED_ORIGINS
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return list(v)
 
     # MongoDB
     MONGODB_URL: str = "mongodb://localhost:27017"

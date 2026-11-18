@@ -47,3 +47,4 @@ npm run dev
 
 - **Frontend**: Deploy `frontend/` on [Vercel](https://vercel.com) (Root directory: `frontend`)
 - **Backend**: Deploy `backend/` on [Render](https://render.com), [Railway](https://railway.app), or [Koyeb](https://koyeb.com) (Root directory: `backend`)
+

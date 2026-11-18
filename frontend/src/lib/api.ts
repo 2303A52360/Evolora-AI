@@ -3,7 +3,20 @@
  * All API calls in the frontend MUST go through this module.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+function getApiBaseUrl(): string {
+  let url = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1").trim();
+  // Strip trailing slashes
+  while (url.endsWith("/")) {
+    url = url.slice(0, -1);
+  }
+  // Ensure /api/v1 path suffix exists so endpoints don't 404
+  if (!url.endsWith("/api/v1")) {
+    url = `${url}/api/v1`;
+  }
+  return url;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 interface ApiOptions {
   method?: string;
@@ -55,21 +68,53 @@ class ApiClient {
       fetchHeaders["Authorization"] = `Bearer ${authToken}`;
     }
 
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method,
-      headers: fetchHeaders,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}${endpoint}`, {
+        method,
+        headers: fetchHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (networkErr: unknown) {
+      const isBrowser = typeof window !== "undefined";
+      const isMixedContent =
+        isBrowser &&
+        window.location.protocol === "https:" &&
+        this.baseUrl.startsWith("http:");
+
+      let detail = "Unable to connect to the server.";
+      if (isMixedContent) {
+        detail = "Security block: HTTPS site cannot call an insecure HTTP backend. Ensure your backend URL starts with https://.";
+      } else if (isBrowser && (!process.env.NEXT_PUBLIC_API_URL || this.baseUrl.includes("localhost"))) {
+        detail = "NEXT_PUBLIC_API_URL is missing or pointing to localhost. Please set NEXT_PUBLIC_API_URL in Vercel settings and redeploy.";
+      } else {
+        detail = `Failed to connect to backend (${this.baseUrl}). Verify backend is running and CORS is configured.`;
+      }
+
+      const error: ApiError = {
+        detail,
+        status: 0,
+      };
+      throw error;
+    }
 
     if (!response.ok) {
       const error: ApiError = {
-        detail: "An unexpected error occurred",
+        detail: `Request failed with status ${response.status}`,
         status: response.status,
       };
 
       try {
         const errorData = await response.json();
-        error.detail = errorData.detail || error.detail;
+        if (Array.isArray(errorData.detail)) {
+          error.detail = errorData.detail
+            .map((item: any) => item.msg || JSON.stringify(item))
+            .join(", ");
+        } else if (typeof errorData.detail === "string") {
+          error.detail = errorData.detail;
+        } else if (errorData.message) {
+          error.detail = String(errorData.message);
+        }
       } catch {
         // Response isn't JSON
       }
